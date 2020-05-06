@@ -1,6 +1,6 @@
 {
   "name": "@arcticzeroo/switch-stock-common",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Common module for switch in stock",
   "main": "index.js",
   "scripts": {

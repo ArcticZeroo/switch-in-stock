@@ -20,6 +20,8 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "@arcticzeroo/duration": "^1.1.2",
+    "async-sema": "^3.1.0",
     "axios": "^0.19.2",
     "express": "^4.17.1"
   }

@@ -7,6 +7,7 @@ export interface IStockRetrieverResult {
 // To be used on the website
 export interface IStockResult extends IStockRetrieverResult {
     isError: boolean;
+    errorText?: string;
 }
 
 

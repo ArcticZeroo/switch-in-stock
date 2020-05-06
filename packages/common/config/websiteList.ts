@@ -6,7 +6,7 @@ import BHPhotoRetriever from '../retrievers/BHPhotoRetriever';
 import CostcoRetriever from '../retrievers/CostcoRetriever';
 import TargetRetriever from '../retrievers/TargetRetriever';
 
-const websites: IWebsite[] = [
+const websiteList: IWebsite[] = [
     {
         name: 'Best Buy',
         url: 'https://www.bestbuy.com/site/nintendo-switch-32gb-console-gray-joy-con/6364253.p?skuId=6364253',
@@ -72,4 +72,4 @@ const websites: IWebsite[] = [
     },
 ];
 
-export default websites;
+export default websiteList;
