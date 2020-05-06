@@ -1,0 +1,26 @@
+{
+  "name": "@arcticzeroo/switch-stock-server",
+  "version": "0.0.1",
+  "description": "Checks whether the switch is in stock yet",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcticzeroo/switch-in-stock.git"
+  },
+  "author": "spencer@frozor.io",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/arcticzeroo/switch-in-stock/issues"
+  },
+  "homepage": "https://github.com/arcticzeroo/switch-in-stock#readme",
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "express": "^4.17.1"
+  }
+}
