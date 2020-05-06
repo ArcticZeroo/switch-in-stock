@@ -1,5 +1,5 @@
 import { IStockRetrieverResult } from '../models/IStockResult';
-import StockRetriever from '../models/StockRetriever';
+import StockRetriever from './StockRetriever';
 
 export default class BestBuyRetriever extends StockRetriever {
     protected async parseResult(document: Document): Promise<IStockRetrieverResult> {

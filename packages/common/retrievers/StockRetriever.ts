@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
-import { IStockRetrieverResult } from './IStockResult';
+import { IStockRetrieverResult } from '../models/IStockResult';
 
 export interface IStockRetrieverParams {
     zipCode: string;
@@ -15,17 +15,17 @@ export default abstract class StockRetriever {
 
     protected zipCode: string;
 
-    constructor({ zipCode }: IStockRetrieverParams) {
+    constructor({ zipCode }: Partial<IStockRetrieverParams> = {}) {
         this.zipCode = zipCode;
     }
 
-    protected abstract parseResult(document: Document): Promise<IStockRetrieverResult>;
+    protected abstract parseResult(document: Document, html: string): Promise<IStockRetrieverResult>;
 
     protected async retrieveAndParse({ url, parse, request = url => this.requestHtml(url) }: { url: string, request?: typeof StockRetriever.prototype.requestHtml, parse: typeof StockRetriever.prototype.parseResult }) {
         try {
             const html = await request(url);
             const dom = new JSDOM(html);
-            return parse(dom.window.document);
+            return parse(dom.window.document, html);
         } catch (e) {
             throw e;
         }
@@ -35,7 +35,7 @@ export default abstract class StockRetriever {
         return axios.get(url, { headers: StockRetriever.DEFAULT_HEADERS }).then(r => r.data);
     }
 
-    async isInStock(url: string): Promise<IStockRetrieverResult> {
-        return this.retrieveAndParse({ url, parse: document => this.parseResult(document) });
+    async retrieveStock(url: string): Promise<IStockRetrieverResult> {
+        return this.retrieveAndParse({ url, parse: (document, html) => this.parseResult(document, html) });
     }
 };

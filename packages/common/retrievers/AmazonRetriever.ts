@@ -1,5 +1,5 @@
 import { IStockRetrieverResult } from '../models/IStockResult';
-import StockRetriever from '../models/StockRetriever';
+import StockRetriever from './StockRetriever';
 
 export default class AmazonRetriever extends StockRetriever {
     private static readonly DESIRED_PRICE = '299.99';

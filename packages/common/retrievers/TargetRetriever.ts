@@ -1,7 +1,7 @@
 import axios from 'axios';
 import locationConfig from '../config/locationConfig';
 import { IStockRetrieverResult } from '../models/IStockResult';
-import StockRetriever from '../models/StockRetriever';
+import StockRetriever from './StockRetriever';
 
 enum AvailabilityStatus {
     outOfStock = 'OUT_OF_STOCK',
@@ -12,6 +12,10 @@ export default class TargetRetriever extends StockRetriever {
     private static readonly STATE_DATA_CLEAN_REGEX = /^window\.__PRELOADED_STATE__\s*=\s*/;
 
     private async parseStoreResult(result: any): Promise<IStockRetrieverResult> {
+        if (!this.zipCode) {
+            throw new Error('Zipcode not provided');
+        }
+
         if (!result.hasOwnProperty('products') || !Array.isArray(result.products)) {
             throw new Error('Product list missing in location search');
         }
@@ -25,7 +29,7 @@ export default class TargetRetriever extends StockRetriever {
             return {
                 isInStock: false,
                 extraData: {
-                    message: `Out of stock at all stores within 100 miles of ${locationConfig.zipCode}`
+                    message: `Out of stock at all stores within 100 miles of ${this.zipCode}`
                 }
             };
         }
@@ -33,7 +37,7 @@ export default class TargetRetriever extends StockRetriever {
         return {
             isInStock: true,
             extraData: {
-                message: `In stock in at least one store within 100 miles of ${locationConfig.zipCode}`
+                message: `In stock in at least one store within 100 miles of ${this.zipCode}`
             }
         };
     }
@@ -64,7 +68,7 @@ export default class TargetRetriever extends StockRetriever {
         const {apiKey, atpFulfillmentAggregator: apiBaseUrl} = serviceConfig;
         const productId = availabilityStatus.product_id;
 
-        const url = `${apiBaseUrl}/fiats/${productId}?key=${apiKey}&nearby=${locationConfig.zipCode}&limit=25&requested_quantity=1&radius=100&include_only_available_stores=true&fulfillment_test_mode=grocery_opu_team_member_test`;
+        const url = `${apiBaseUrl}/fiats/${productId}?key=${apiKey}&nearby=${this.zipCode}&limit=25&requested_quantity=1&radius=100&include_only_available_stores=true&fulfillment_test_mode=grocery_opu_team_member_test`;
 
         return axios.get(url)
             .then(res => this.parseStoreResult(JSON.parse(res.data)));

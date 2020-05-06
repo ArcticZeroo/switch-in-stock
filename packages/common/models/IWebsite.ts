@@ -1,7 +1,11 @@
-import StockRetriever, { IStockRetrieverParams } from './StockRetriever';
+import StockRetriever, { IStockRetrieverParams } from '../retrievers/StockRetriever';
 
 export default interface IWebsite {
     name: string;
     url: string;
-    retriever: (params: IStockRetrieverParams) => StockRetriever;
+    retriever: {
+        create: (params?: IStockRetrieverParams) => StockRetriever,
+        isClientside: boolean
+    };
+    isDisabled?: boolean;
 };
