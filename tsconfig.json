@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "sourceMap": true,
+    "lib": [
+      "es2018"
+    ],
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "baseUrl": "./packages",
+    "paths": {
+      "@arcticzeroo/switch-stock-server": ["server"],
+      "@arcticzeroo/switch-stock-client": ["client"],
+      "@arcticzeroo/switch-stock-common": ["common"]
+    }
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
