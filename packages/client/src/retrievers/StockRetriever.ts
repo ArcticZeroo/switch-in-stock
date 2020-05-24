@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { IStockRetrieverResult } from '../models/IStockResult';
+import StockType from '../models/StockType';
 
 export interface IStockRetrieverParams {
     zipCode: string;
@@ -18,6 +19,10 @@ export default abstract class StockRetriever {
     constructor({ zipCode }: Partial<IStockRetrieverParams> = {}) {
         this.zipCode = zipCode;
     }
+
+    protected abstract supportsStockType(stockType: StockType.online): this is IOnlineStockRetriever;
+    protected abstract supportsStockType(stockType: StockType.physical): this is IPhysicalStockRetriever;
+    protected abstract supportsStockType(stockType: StockType): boolean;
 
     protected abstract parseResult(document: Document, html: string): Promise<IStockRetrieverResult>;
 

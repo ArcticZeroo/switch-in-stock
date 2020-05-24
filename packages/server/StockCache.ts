@@ -2,6 +2,7 @@ import { Sema } from 'async-sema';
 import websiteList from '../common/config/websiteList';
 import { IStockResult, IStockRetrieverResult } from '../common/models/IStockResult';
 import Duration from '@arcticzeroo/duration';
+import { IStockRetrieverParams } from '../common/retrievers/StockRetriever';
 
 export default class StockCache {
     private static readonly CACHE_EXPIRE_TIME = new Duration({ minutes: 10 });
@@ -22,15 +23,19 @@ export default class StockCache {
         return Date.now() >= this._nextExpireTime;
     }
 
-    private async _update() {
+    private async _update(params?: IStockRetrieverParams) {
         for (const website of websiteList) {
-            if (website.isDisabled || website.retriever.isClientside) {
+            if (website.isDisabled) {
                 continue;
+            }
+
+            if (website.retriever.isClientside && !params) {
+                return;
             }
 
             let stockResult: IStockResult;
             try {
-                const retriever = website.retriever.create();
+                const retriever = website.retriever.create(params);
                 const result = await retriever.retrieveStock(website.url);
                 stockResult = { isError: false, ...result };
             } catch (e) {
@@ -52,12 +57,12 @@ export default class StockCache {
         return result;
     }
 
-    async getResults(): Promise<{ [name: string]: IStockResult }> {
+    async getResults(params?: IStockRetrieverParams): Promise<{ [name: string]: IStockResult }> {
         await this._resultsLock.acquire();
 
         try {
             if (this._isExpired) {
-                await this._update();
+                await this._update(params);
             }
 
             return this._getResultsAsObject();
