@@ -1,6 +1,6 @@
 import axios from 'axios';
-import locationConfig from '../config/locationConfig';
 import { IStockRetrieverResult } from '../models/IStockResult';
+import StockType from '../models/StockType';
 import StockRetriever from './StockRetriever';
 
 enum AvailabilityStatus {
@@ -8,10 +8,21 @@ enum AvailabilityStatus {
     inStock = 'IN_STOCK'
 }
 
+enum AvailabilityChannels {
+    holdForPickup = 'HOLD',
+    shipToGuest = 'SHIPGUEST',
+    shipToStore = 'SHIPSTORE',
+    deliverWithShipt = 'SCHEDULED_DELIVERY'
+}
+
 export default class TargetRetriever extends StockRetriever {
     private static readonly STATE_DATA_CLEAN_REGEX = /^window\.__PRELOADED_STATE__\s*=\s*/;
 
-    private async parseStoreResult(result: any): Promise<IStockRetrieverResult> {
+    public supportsStockType(stockType: StockType) {
+        return stockType === StockType.online || stockType === StockType.physical;
+    }
+
+    private async parseStoreResult(result: any): Promise<boolean> {
         if (!this.zipCode) {
             throw new Error('Zipcode not provided');
         }
@@ -25,21 +36,7 @@ export default class TargetRetriever extends StockRetriever {
             throw new Error('Could not get product in location search');
         }
 
-        if (!Array.isArray(product.locations) || !product.locations.length) {
-            return {
-                isInStock: false,
-                extraData: {
-                    message: `Out of stock at all stores within 100 miles of ${this.zipCode}`
-                }
-            };
-        }
-
-        return {
-            isInStock: true,
-            extraData: {
-                message: `In stock in at least one store within 100 miles of ${this.zipCode}`
-            }
-        };
+        return Array.isArray(product.locations) && product.locations.length;
     }
 
     protected async parseResult(document: Document): Promise<IStockRetrieverResult> {
@@ -55,14 +52,7 @@ export default class TargetRetriever extends StockRetriever {
         const stockPromiseData = stateData.product.productDetails.item.available_to_promise_network;
 
         const availabilityStatus = stockPromiseData.availability_status;
-        if (availabilityStatus === AvailabilityStatus.inStock) {
-            return {
-                isInStock: true,
-                extraData: {
-
-                }
-            }
-        }
+        const isOnline = availabilityStatus === AvailabilityStatus.inStock;
 
         const serviceConfig = stateData.config.services.target;
         const {apiKey, atpFulfillmentAggregator: apiBaseUrl} = serviceConfig;
@@ -70,7 +60,13 @@ export default class TargetRetriever extends StockRetriever {
 
         const url = `${apiBaseUrl}/fiats/${productId}?key=${apiKey}&nearby=${this.zipCode}&limit=25&requested_quantity=1&radius=100&include_only_available_stores=true&fulfillment_test_mode=grocery_opu_team_member_test`;
 
-        return axios.get(url)
-            .then(res => this.parseStoreResult(JSON.parse(res.data)));
+        let isPhysical;
+        try {
+            isPhysical = await axios.get(url).then(res => this.parseStoreResult(JSON.parse(res.data)));
+        } catch (e) {
+            throw e;
+        }
+
+        return { isOnline, isPhysical };
     }
 }

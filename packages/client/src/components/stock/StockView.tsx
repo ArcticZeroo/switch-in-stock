@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import usePromise from '../../hooks/usePromise';
+import usePromise, { PromiseState } from '../../hooks/usePromise';
 import { IStockResult } from '../../models/IStockResult';
 import IWebsite from '../../models/IWebsite';
 import StockStatus from './StockStatus';
@@ -18,11 +18,11 @@ const stockViewColors = {
 
 interface IWebsiteProps {
     config: IWebsite;
-    stock: Promise<IStockResult>;
+    stock: Promise<boolean>;
 }
 
 const StockView: React.FC<IWebsiteProps> = ({ config, stock }) => {
-    const {value: promiseResult, error: promiseError} = usePromise(stock);
+    const {value: promiseResult, error: promiseError, state: promiseState} = usePromise(stock);
 
     let child;
     if (config.isDisabled) {
@@ -31,18 +31,20 @@ const StockView: React.FC<IWebsiteProps> = ({ config, stock }) => {
                 Disabled
             </StockStatus>
         );
-    } else if (promiseResult) {
-        child = (
-            <StockStatus backgroundColor={promiseResult.isInStock ? stockViewColors.inStock : stockViewColors.outOfStockOrError}>
-                {promiseResult.isInStock ? 'In Stock' : 'Out of Stock'}
-            </StockStatus>
-        );
-    } else if (promiseError) {
-        child = (
-            <StockStatus backgroundColor={stockViewColors.outOfStockOrError}>
-                Error
-            </StockStatus>
-        );
+    } else if (promiseState === PromiseState.done) {
+        if (!promiseError) {
+            child = (
+                <StockStatus backgroundColor={promiseResult ? stockViewColors.inStock : stockViewColors.outOfStockOrError}>
+                    {promiseResult ? 'In Stock' : 'Out of Stock'}
+                </StockStatus>
+            );
+        } else {
+            child = (
+                <StockStatus backgroundColor={stockViewColors.outOfStockOrError}>
+                    Error
+                </StockStatus>
+            );
+        }
     } else {
         child = (
             <StockStatus backgroundColor={stockViewColors.loadingOrDisabled}>

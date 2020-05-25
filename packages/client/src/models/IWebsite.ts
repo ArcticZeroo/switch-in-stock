@@ -4,8 +4,7 @@ export default interface IWebsite {
     name: string;
     url: string;
     retriever: {
-        create: (params?: IStockRetrieverParams) => StockRetriever,
-        isClientside: boolean
+        create: (params?: IStockRetrieverParams) => StockRetriever
     };
     isDisabled?: boolean;
 };

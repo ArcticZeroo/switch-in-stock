@@ -1,7 +1,23 @@
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
-import { IStockRetrieverResult } from '../models/IStockResult';
+import {
+    IOnlineStockRetrieverResult, IPhysicalStockRetrieverResult,
+    IStockFailureResult,
+    IStockRetrieverResult,
+    IStockSuccessOnlineResult,
+    IStockSuccessPhysicalResult
+} from '../models/IStockResult';
 import StockType from '../models/StockType';
+
+export interface IOnlineStockRetriever {
+    parseResult: Promise<IOnlineStockRetrieverResult>;
+    retrieveStock: Promise<IOnlineStockRetrieverResult>;
+}
+
+export interface IPhysicalStockRetriever {
+    parseResult: Promise<IPhysicalStockRetrieverResult>;
+    retrieveStock: Promise<IPhysicalStockRetrieverResult>;
+}
 
 export interface IStockRetrieverParams {
     zipCode: string;
@@ -20,9 +36,9 @@ export default abstract class StockRetriever {
         this.zipCode = zipCode;
     }
 
-    protected abstract supportsStockType(stockType: StockType.online): this is IOnlineStockRetriever;
-    protected abstract supportsStockType(stockType: StockType.physical): this is IPhysicalStockRetriever;
-    protected abstract supportsStockType(stockType: StockType): boolean;
+    public abstract supportsStockType(stockType: StockType.online): this is IOnlineStockRetriever;
+    public abstract supportsStockType(stockType: StockType.physical): this is IPhysicalStockRetriever;
+    public abstract supportsStockType(stockType: StockType): boolean;
 
     protected abstract parseResult(document: Document, html: string): Promise<IStockRetrieverResult>;
 
@@ -40,7 +56,7 @@ export default abstract class StockRetriever {
         return axios.get(url, { headers: StockRetriever.DEFAULT_HEADERS }).then(r => r.data);
     }
 
-    async retrieveStock(url: string): Promise<IStockRetrieverResult> {
+    public async retrieveStock(url: string): Promise<IStockRetrieverResult> {
         return this.retrieveAndParse({ url, parse: (document, html) => this.parseResult(document, html) });
     }
 };
